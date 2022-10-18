@@ -71,4 +71,12 @@ clean_accel %>%
 ```
 The plot above shows that there is no visual correlation between the day of the week and the activity count per minute. The activity count generally falls between 0 to 2500 during the course of the day with many outliers. It is lower in the earlier part of the day and then gradually rises. 
 
+### Problem 3
+Loading the data 
+
 ```{r}
+library(p8105.datasets)
+data("ny_noaa")
+
+```
+
