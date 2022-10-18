@@ -100,5 +100,28 @@ clean_noaa %>%
 ```
 The most common observed value for snowfall is zero. This is because there are many days where there is no snow fall in NY.
 
+Two panel plot showing average max temperature in january and july in each station across years 
+
+```{r}
+plot_data <- clean_noaa %>%
+  group_by(id, year, month) %>%
+    filter(month == 1 | month == 7) %>%
+  summarize(mean_tmax = mean(tmax))
+  
+  
+#ggplot 
+plot_data %>%  
+  mutate(month = if_else(month == 1, "Januray", "July")) %>%
+ggplot() + 
+  geom_point(aes(x = year, y = mean_tmax), alpha = 0.5) +
+  facet_grid(.~month) +
+    labs(title = "Average max temperature in january and july accross the years", x = "year", y = "Average max temp")
+  theme_bw()
+  
+
+
+
+
+```
 
  
