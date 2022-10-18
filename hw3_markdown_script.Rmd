@@ -1,0 +1,74 @@
+---
+title: "Data Science HW3"
+author: "Sabah Usmani"
+date: '`r format(Sys.time(), "%Y-%m-%d")`'
+output: github_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, message = FALSE)
+```
+
+
+```{r load_libraries}
+library(tidyverse)
+library(readxl)
+```
+### Problem 2
+Loading the accelerometer data 
+
+```{r}
+accel_data <- read_csv("data/accel_data.csv")
+
+```
+Clean and tidy accelerometer data 
+
+```{r}
+clean_accel <- accel_data %>%
+  janitor::clean_names() %>%
+  pivot_longer(activity_1:activity_1440,
+               names_to = "minute",
+               names_prefix = "activity_",
+               values_to = "count", 
+               ) %>%
+  mutate(day = tolower(day)) %>%
+  mutate(day_type = if_else(day == "saturday"|day == "sunday" , "weekend", "weekday")) %>%
+  mutate(minute = as.numeric(minute)) #turn activity into a numeric 
+
+#nrow(clean_accel)
+#ncol(clean_accel)
+
+```
+This clean accelerometer dataset has 6 variables and 50,400 observations. The variables in this dataset are week, day_id for the day of the week (day_id), the day of the week (day), minute (includes 1440 mins of the 24 hour day), the activity count for each minute of the 24-hour day (count) and a weekday weekend variable (day_type). 
+
+Aggregating across minutes to create a total activity for each day 
+
+```{r}
+summary_table <- clean_accel %>% 
+  group_by(week, day_id, day) %>%
+  summarize(sum_count = sum(count))
+
+#Assessing trends using simple plot 
+summary_table %>%
+  ggplot() +
+  geom_point(aes(x = day_id, y = sum_count, color = day)) +
+  labs(title = "Relationship day and total aggregate activity count per day ", x = "day", y = "activity count")
+  theme_bw()
+
+```
+From the summary table and scatter plot above, we do not see any clear trend between day and total aggregate activity count, even when seperated by days of the week. While the plot was not required for second part of Q2, I thought it was important in order to access any trends in the aggregated table. 
+
+Single panel plot that shows the 24-hour activity time courses for each day
+
+```{r}
+clean_accel %>%
+  ggplot() +
+  geom_point(aes(x = minute, y = count, color = day), alpha = 0.4) +
+  labs(title = "24 hour activity time course by days", x = "minute of the day", y = "activity count per minute")
+  theme_bw()
+
+```
+The plot above shows that there is no visual correlation between the day of the week and the activity count per minute. The activity count generally falls between 0 to 2500 during the course of the day with many outliers. It is lower in the earlier part of the day and then gradually rises. 
+
+```{r}
