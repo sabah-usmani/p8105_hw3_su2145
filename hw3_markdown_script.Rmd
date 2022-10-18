@@ -14,6 +14,7 @@ knitr::opts_chunk$set(collapse = TRUE, message = FALSE)
 ```{r load_libraries}
 library(tidyverse)
 library(readxl)
+library(patchwork)
 ```
 ### Problem 2
 Loading the accelerometer data 
@@ -93,8 +94,8 @@ clean_noaa <- ny_noaa %>%
    separate(date, into = c("year", "month", "day")) %>%
   mutate(year = as.numeric(year), month = as.numeric(month), day = as.numeric(day), prcp = as.numeric(prcp), snow = as.numeric(snow), snwd = as.numeric(snwd))
   
-clean_noaa %>%
-  pull(snow) 
+#clean_noaa %>%
+  #pull(snow) 
 
 
 ```
@@ -117,11 +118,96 @@ ggplot() +
   facet_grid(.~month) +
     labs(title = "Average max temperature in january and july accross the years", x = "year", y = "Average max temp")
   theme_bw()
-  
+
+```
+The average max temperature is much higher in July accross all stations than in january. There is out obvious outlier in january and a few outliers in July. 
+
+Two-panel plot for tmax vs. tmin 
+
+```{r}
+
+violin_plot <- clean_noaa %>%
+  ggplot(aes(y = tmax, x = tmin)) +
+  geom_violin() +
+  labs(title = "tmax vs. tmin ", x = "tmin", y = "tmax")
+
+```
+make a plot showing the distribution of snowfall values greater than 0 and less than 100 separately by year
+
+```{r}
+library(patchwork)
 
 
+snow_data <- clean_noaa %>%
+  filter(snow > 0 & snow < 100) 
 
+ snow_plot <- snow_data %>%
+  mutate(year = as.character(year)) %>%
+  group_by(year) %>%
+ggplot() +
+  geom_boxplot(aes(y= snow, x = year), width = 0.5) +
+  theme_bw() +
+  theme(axis.text = element_text(size = 5))    
+  labs(title = "distribution of snowfall values greater than 0 and less than 100  by year")
+
+violin_plot /snow_plot
 
 ```
 
- 
+Problem 1 
+
+```{r}
+library(p8105.datasets)
+data("instacart")
+```
+
+
+```{r}
+instacart %>% 
+  count(aisle) %>% 
+  arrange(desc(n))
+```
+
+Next is a plot that shows the number of items ordered in each aisle. Here, aisles are ordered by ascending number of items.
+
+```{r}
+instacart %>% 
+  count(aisle) %>% 
+  filter(n > 10000) %>% 
+  mutate(aisle = fct_reorder(aisle, n)) %>% 
+  ggplot(aes(x = aisle, y = n)) + 
+  geom_point() + 
+  labs(title = "Number of items ordered in each aisle") +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1))
+
+```
+
+Our next table shows the three most popular items in aisles `baking ingredients`, `dog food care`, and `packaged vegetables fruits`, and includes the number of times each item is ordered in your table.
+
+```{r}
+instacart %>% 
+  filter(aisle %in% c("baking ingredients", "dog food care", "packaged vegetables fruits")) %>%
+  group_by(aisle) %>% 
+  count(product_name) %>% 
+  mutate(rank = min_rank(desc(n))) %>% 
+  filter(rank < 4) %>% 
+  arrange(desc(n)) %>%
+  knitr::kable()
+```
+
+Finally is a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week. This table has been formatted in an untidy manner for human readers. Pink Lady Apples are generally purchased slightly earlier in the day than Coffee Ice Cream, with the exception of day 5.
+
+```{r}
+instacart %>%
+  filter(product_name %in% c("Pink Lady Apples", "Coffee Ice Cream")) %>%
+  group_by(product_name, order_dow) %>%
+  summarize(mean_hour = mean(order_hour_of_day)) %>%
+  spread(key = order_dow, value = mean_hour) %>%
+  knitr::kable(digits = 2)
+```
+
+
+
+
+
+
