@@ -76,7 +76,29 @@ Loading the data
 
 ```{r}
 library(p8105.datasets)
-data("ny_noaa")
+data("ny_noaa") 
+
+str(ny_noaa)
 
 ```
 
+These data were accessed from the NOAA National Climatic Data Center. It is publicaly accessible weather data. The data contain the following variables weather station id (id), date of observation (date), precipitation in tenth of mm (prcp), snowfall in mm (snow), snow depth in mm (snwd), maximum temperature in degrees C (tmax) and minimum temperature in degrees C (tmin). There is a lot of missing data in this dataset (i.e. NA values in the table) which can bias our analysis  if the reason for this is nonrandom. There are missing data for all the variables except id and date. 
+
+cleaning the data, correcting the class and creating a separate variable for day, month, year.
+
+```{r}
+clean_noaa <- ny_noaa %>% 
+  mutate(tmax = as.numeric(tmax)) %>% 
+  mutate(tmin = as.numeric(tmin)) %>%
+   separate(date, into = c("year", "month", "day")) %>%
+  mutate(year = as.numeric(year), month = as.numeric(month), day = as.numeric(day), prcp = as.numeric(prcp), snow = as.numeric(snow), snwd = as.numeric(snwd))
+  
+clean_noaa %>%
+  pull(snow) 
+
+
+```
+The most common observed value for snowfall is zero. This is because there are many days where there is no snow fall in NY.
+
+
+ 
